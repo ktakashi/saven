@@ -1,19 +1,21 @@
 ;;; -*- mode: scheme; coding: utf-8 -*-
 #!nounbound
 (library (saven build-file)
-    (export read-build-file
-	    *build-file-handlers*
-	    +default-build-file-handlers+)
+    (export saven:read-build-file
+	    saven:supported-file-extensions
+	    *saven:build-file-handlers*
+	    +saven:default-build-file-handlers+)
     (import (rnrs)
 	    (text yaml)
 	    (text json)
 	    (text json pointer)
 	    (util file)
+	    (util vector)
 	    (srfi :39 parameters))
 
-(define (read-build-file file)
+(define (saven:read-build-file file)
   (let ((ext (path-extension file)))
-    (cond ((assoc ext (*build-file-handlers*)) =>
+    (cond ((assoc ext (*saven:build-file-handlers*)) =>
 	   (lambda (slot) ((cdr slot) file)))
 	  ;; default sexp
 	  (else (read-sexp-build-file file)))))
@@ -47,38 +49,46 @@
 	    default
 	    v)))))
 
-(define dependencies-pointer (required-json-pointer "/dependencies"))
+(define dependencies-pointer (optional-json-pointer "/dependencies" '()))
 (define (adjust-build-descriptor sexp)
   (define (adjust p handler)
     (let ((v (p sexp)))
       (if (json-pointer-not-found? v)
 	  '()
 	  (handler v))))
-  `(saven ,@(adjust dependencies-pointer adjust-dependencies)))
+  (define (remove-all-of . keys)
+    (vector->list
+     (vector-map (lambda (s) (cons (string->symbol (car s)) (cdr s)))
+		 (vector-remove (lambda (o) (member (car o) keys)) sexp))))
+  `(saven ,@(adjust dependencies-pointer adjust-dependencies)
+	  ,@(remove-all-of "dependencies")))
 
 (define type-pointer (required-json-pointer "/type"))
 (define name-pointer (required-json-pointer "/name"))
-(define release-pointer (required-json-pointer "/release"))
+(define release-pointer (optional-json-pointer "/release"))
 (define scope-pointer (optional-json-pointer "/scope"))
 
 (define (adjust-dependencies dependencies)
   (define (->dependency dep)
     `(,(string->symbol (type-pointer dep))
       (name ,(name-pointer dep))
-      (release ,(release-pointer dep))
+      ,@(cond ((release-pointer dep) => (lambda (r) `((release ,r))))
+	      (else '()))
       ,@(cond ((scope-pointer dep) => (lambda (s) `((scope ,s))))
 	      (else '()))))
   `((dependencies
      ,@(map ->dependency dependencies))))
 
-(define +default-build-file-handlers+
+(define +saven:default-build-file-handlers+
   `(("json" . ,read-json-build-file)
     ("scm"  . ,read-sexp-build-file)
     ("yaml" . ,read-yaml-build-file)
     ("yml"  . ,read-yaml-build-file)))
 
-(define *build-file-handlers*
-  (make-parameter +default-build-file-handlers+))
+(define *saven:build-file-handlers*
+  (make-parameter +saven:default-build-file-handlers+))
+(define (saven:supported-file-extensions)
+  (map car (*saven:build-file-handlers*)))
 
 )
 	    

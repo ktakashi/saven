@@ -1,0 +1,21 @@
+#!/bin/sh
+#| -*- mode: schem; coding: utf-8; -*-
+exec sagittarius $0 "$@"
+|#
+(import (rnrs)
+	(saven)
+	(getopt))
+
+(define (usage)
+  (print "sav [OPTIONS] targets ...")
+  (print "OPTIONS:")
+  (print " -f sav file (e.g. sav.scm, sav.yaml), default sav.scm"))
+
+(define (main args)
+  (with-args (cdr args)
+      ((file (#\f "file") #t "sav.scm")
+       . rest)
+    (unless (file-exists? file)
+      (print file " doesn't exist")
+      (usage))
+    (apply saven:lifecycle file rest)))

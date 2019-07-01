@@ -23,10 +23,12 @@ exec sagittarius -L$lib $0 "$@"
      (github
       (name "ktakashi/r7rs-postgresql")
       (release "master")
-      (scope "test")))))
+      (scope "test")))
+    (modules "foo" "bar")))
 
 (define (read-test file)
-  (test-equal file expected (read-build-file (build-path data-directory file))))
+  (test-equal file expected
+	      (saven:read-build-file (build-path data-directory file))))
 
 (read-test "build-files/test.yaml")
 (read-test "build-files/test.json")

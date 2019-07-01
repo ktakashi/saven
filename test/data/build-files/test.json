@@ -11,5 +11,6 @@
 	    "release": "master",
 	    "scope": "test"
 	}
-    ]
+    ],
+    "modules": ["foo", "bar"]
 }
