@@ -1,0 +1,15 @@
+{
+    "dependencies": [
+	{
+	    "type": "github",
+	    "name": "ktakashi/r6rs-pffi",
+	    "release": "master"
+	},
+	{
+	    "type": "github",
+	    "name": "ktakashi/r7rs-postgresql",
+	    "release": "master",
+	    "scope": "test"
+	}
+    ]
+}
