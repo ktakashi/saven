@@ -25,3 +25,4 @@ exec sagittarius -L$lib $me "$@"
   )
 
 (test-end)
+(exit (test-runner-fail-count (test-runner-get)))

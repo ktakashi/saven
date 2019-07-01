@@ -33,5 +33,6 @@ exec sagittarius -L$lib $me "$@"
 (read-test "build-files/test.yaml")
 (read-test "build-files/test.json")
 (read-test "build-files/test.scm")
-
+(test-assert #f)
 (test-end)
+(exit (test-runner-fail-count (test-runner-get)))
