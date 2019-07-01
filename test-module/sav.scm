@@ -1,4 +1,5 @@
 (saven
+ (version "1.0")
  (dependencies
   (github
    (name "ktakashi/r6rs-pffi")

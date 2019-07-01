@@ -1,9 +1,9 @@
 #!/bin/bash
 #| -*- mode: scheme; coding: utf-8; -*-
-me=`pwd`/$0
+me=$(pwd)/$0
 lib=$(dirname $me)/../../lib
 cd $(dirname $me)/../../
-exec sagittarius -L$lib $0 "$@"
+exec sagittarius -L$lib $me "$@"
 |#
 (import (rnrs)
 	(saven build-file)
