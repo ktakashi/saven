@@ -50,32 +50,25 @@
 	    v)))))
 
 (define dependencies-pointer (optional-json-pointer "/dependencies" '()))
+(define (remove-all-of sexp . keys)
+  (vector->list
+   (vector-map (lambda (s) (cons (string->symbol (car s)) (cdr s)))
+	       (vector-remove (lambda (o) (member (car o) keys)) sexp))))
 (define (adjust-build-descriptor sexp)
   (define (adjust p handler)
     (let ((v (p sexp)))
       (if (json-pointer-not-found? v)
 	  '()
 	  (handler v))))
-  (define (remove-all-of . keys)
-    (vector->list
-     (vector-map (lambda (s) (cons (string->symbol (car s)) (cdr s)))
-		 (vector-remove (lambda (o) (member (car o) keys)) sexp))))
   `(saven ,@(adjust dependencies-pointer adjust-dependencies)
-	  ,@(remove-all-of "dependencies")))
+	  ,@(remove-all-of sexp "dependencies")))
 
 (define type-pointer (required-json-pointer "/type"))
-(define name-pointer (required-json-pointer "/name"))
-(define release-pointer (optional-json-pointer "/release"))
-(define scope-pointer (optional-json-pointer "/scope"))
 
 (define (adjust-dependencies dependencies)
   (define (->dependency dep)
     `(,(string->symbol (type-pointer dep))
-      (name ,(name-pointer dep))
-      ,@(cond ((release-pointer dep) => (lambda (r) `((release ,r))))
-	      (else '()))
-      ,@(cond ((scope-pointer dep) => (lambda (s) `((scope ,s))))
-	      (else '()))))
+      ,@(remove-all-of dep "type")))
   `((dependencies
      ,@(map ->dependency dependencies))))
 
