@@ -1,4 +1,5 @@
 (saven
+ (name "test-module")
  (version "1.0")
  (dependencies
   (github

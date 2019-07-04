@@ -8,6 +8,7 @@ exec sagittarius -L$lib $me "$@"
 (import (rnrs)
 	(saven descriptors)
 	(util file)
+	(srfi :1)
 	(srfi :64))
 
 (define root-sav-file (build-path* (current-directory) "test-module" "sav.scm"))
@@ -21,8 +22,10 @@ exec sagittarius -L$lib $me "$@"
   (test-equal 2 (length (saven:module-descriptor-modules descriptor)))
   (test-equal '(#t #t) (map saven:module-descriptor?
 			    (saven:module-descriptor-modules descriptor)))
-  (test-equal 2 (length (saven:module-descriptor-dependencies descriptor)))
-  )
+  (test-assert (lset= string=? '("foo" "bar")
+		      (map saven:module-descriptor-name
+			   (saven:module-descriptor-modules descriptor))))
+  (test-equal 2 (length (saven:module-descriptor-dependencies descriptor))))
 
 (test-end)
 (exit (test-runner-fail-count (test-runner-get)))
