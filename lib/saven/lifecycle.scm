@@ -3,10 +3,12 @@
 (library (saven lifecycle)
     (export saven:lifecycle)
     (import (rnrs)
-	    (saven descriptor))
+	    (saven descriptors)
+	    (saven analyse))
 
 (define (saven:lifecycle sav-file . targets)
   (define descriptor (saven:build-file->module-descriptor sav-file))
-  descriptor)
+  (define sorted-modules (saven:analyse-descriptor descriptor))
+  sorted-modules)
 )
 	    

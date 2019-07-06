@@ -47,7 +47,7 @@
 	    (build-file->module-descriptor root-dir file)))))
 				     
     (cond ((assq 'modules (cdr saven)) => (lambda (m) (map ->modules (cdr m))))
-	  (else #f)))
+	  (else '())))
   (unless (and (pair? saven) (eq? (car saven) 'saven))
     (assertion-violation 'saven:build-file->module-descriptor
 			 "Unknown file" sav-file))
