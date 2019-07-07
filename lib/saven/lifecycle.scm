@@ -9,6 +9,7 @@
 (define (saven:lifecycle sav-file . targets)
   (define descriptor (saven:build-file->module-descriptor sav-file))
   (define sorted-modules (saven:analyse-descriptor descriptor))
+  (display (map saven:module-descriptor-name sorted-modules)) (newline)
   sorted-modules)
 )
 	    

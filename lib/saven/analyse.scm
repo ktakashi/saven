@@ -24,7 +24,7 @@
 			(lambda (v) (cons (saven:edge-to e) v)) '())
 		     (hashtable-update! indegrees (saven:edge-to e)
 			(lambda (v) (+ v 1)) 0))
-		   (list-queue-list edges))
+		   edges)
 		  (p adjacencies indegrees vertice))))))
 ;; edges contains only 'to' (from is always me)
 (define-record-type saven:vertix
@@ -47,7 +47,7 @@
   ;; descriptor twice
   (define module-table (make-hashtable equal-hash equal?))
   (define (lookup name)
-    (cond ((hashtable-ref module-table name #f))
+    (cond ((and name (hashtable-ref module-table (cdr name) #f)))
 	  (else
 	   (assertion-violation 'saven:analyse-descriptor
 				"module must only refer local module" name))))
@@ -64,11 +64,10 @@
 			       (lookup (assq 'name (cdr d)))))
 			(saven:module-descriptor-dependencies module)))
 	  (for-each (lambda (v)
-		      (list-queue-add-back! vertice v)
-		      (list-queue-add-back! edges (make-saven:edge v module)))
+		      (list-queue-add-back! edges (make-saven:edge v vertix)))
 		    dependencies))))
-    (hashtable-set! module-table (saven:module-descriptor-name module) module)
     (let ((vertix (make-saven:vertix module)))
+      (hashtable-set! module-table (saven:module-descriptor-name module) vertix)
       (list-queue-add-back! vertice vertix)
       (when parent (list-queue-add-back! edges (make-saven:edge parent vertix)))
       (check-dependencies vertix module)
@@ -76,7 +75,7 @@
 		(saven:module-descriptor-modules module))))
   (walk #f descriptor)
   (for-each (lambda (r) (r)) (list-queue-list dependencies-resolvers))
-  (make-saven:graph (list-queue-list vertice) edges))
+  (make-saven:graph (list-queue-list vertice) (list-queue-list edges)))
 
 (define (topoligical-sort graph)
   (define indegrees (hashtable-copy (saven:graph-indegrees graph) #t))
@@ -87,7 +86,7 @@
   (define S (make-list-queue
 	     (filter-map
 	      (lambda (v) (and (zero? (hashtable-ref indegrees v)) v))
-	      (hashtable-key-list indegrees))))
+	      (saven:graph-vertice graph))))
 
   (let loop ()
     (if (list-queue-empty? S)
@@ -99,7 +98,8 @@
 				      (hashtable-key-list indegrees))))
 	(let ((m (list-queue-remove-front! S)))
 	  (list-queue-add-back! L m)
-	  (do ((m (hashtable-ref adjacencies m '()) (cdr m)))
+	  ;; The adjacencies are reverse order so make it in order
+	  (do ((m (reverse (hashtable-ref adjacencies m '())) (cdr m)))
 	      ((null? m) (loop))
 	    (hashtable-update! indegrees (car m) (lambda (v) (- v 1)) 0)
 	    (unless (positive? (hashtable-ref indegrees m 0))

@@ -9,4 +9,4 @@
    (name "ktakashi/r7rs-postgresql")
    (release "master")
    (scope "test")))
- (modules "foo" "bar"))
+ (modules "baz" "foo" "bar"))
