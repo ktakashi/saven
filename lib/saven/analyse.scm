@@ -69,6 +69,7 @@
     (let ((vertix (make-saven:vertix module)))
       (hashtable-set! module-table (saven:module-descriptor-name module) vertix)
       (list-queue-add-back! vertice vertix)
+      ;; TODO should we do this?
       (when parent (list-queue-add-back! edges (make-saven:edge parent vertix)))
       (check-dependencies vertix module)
       (for-each (lambda (m) (walk vertix m))
@@ -93,16 +94,19 @@
 	(if (zero? (hashtable-sum indegrees 0 (lambda (k v acc) (+ v acc))))
 	    (list-queue-list L)
 	    (assertion-violation 'saven:analyse-descriptor
-				 "Cyclic dependencies"
-				 (map saven:module-descriptor-name
-				      (hashtable-key-list indegrees))))
-	(let ((m (list-queue-remove-front! S)))
-	  (list-queue-add-back! L m)
+	      "Cyclic dependencies"
+	      (filter-map (lambda (v)
+			    (and (not (zero? (hashtable-ref indegrees v 1)))
+				 (saven:module-descriptor-name
+				  (saven:vertix-value v))))
+			  (hashtable-key-list indegrees))))
+	(let ((n (list-queue-remove-front! S)))
+	  (list-queue-add-back! L n)
 	  ;; The adjacencies are reverse order so make it in order
-	  (do ((m (reverse (hashtable-ref adjacencies m '())) (cdr m)))
+	  (do ((m (reverse (hashtable-ref adjacencies n '())) (cdr m)))
 	      ((null? m) (loop))
 	    (hashtable-update! indegrees (car m) (lambda (v) (- v 1)) 0)
-	    (unless (positive? (hashtable-ref indegrees m 0))
+	    (unless (positive? (hashtable-ref indegrees (car m) 1))
 	      (list-queue-add-back! S (car m))))))))
 
 )
