@@ -47,7 +47,7 @@
   ;; descriptor twice
   (define module-table (make-hashtable equal-hash equal?))
   (define (lookup name)
-    (cond ((and name (hashtable-ref module-table (cdr name) #f)))
+    (cond ((and name (hashtable-ref module-table (cadr name) #f)))
 	  (else
 	   (assertion-violation 'saven:analyse-descriptor
 				"module must only refer local module" name))))

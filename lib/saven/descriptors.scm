@@ -8,7 +8,10 @@
 	    saven:module-descriptor-modules
 	    saven:module-descriptor-build
 
-	    saven:build-file->module-descriptor)
+	    saven:build-file->module-descriptor
+	    ;; for testing
+	    make-saven:module-descriptor
+	    )
     (import (rnrs)
 	    (sagittarius)
 	    (util file)

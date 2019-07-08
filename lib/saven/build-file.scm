@@ -52,8 +52,13 @@
 (define dependencies-pointer (optional-json-pointer "/dependencies" '()))
 (define (remove-all-of sexp . keys)
   (vector->list
-   (vector-map (lambda (s) (cons (string->symbol (car s)) (cdr s)))
-	       (vector-remove (lambda (o) (member (car o) keys)) sexp))))
+   (vector-map
+    (lambda (s)
+      ;; this sucks...
+      (if (pair? (cdr s))
+	  (cons (string->symbol (car s)) (cdr s))
+	  (list (string->symbol (car s)) (cdr s))))
+    (vector-remove (lambda (o) (member (car o) keys)) sexp))))
 (define (adjust-build-descriptor sexp)
   (define (adjust p handler)
     (let ((v (p sexp)))
