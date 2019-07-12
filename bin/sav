@@ -11,6 +11,12 @@ exec sagittarius $0 "$@"
   (print "OPTIONS:")
   (print " -f sav file (e.g. sav.scm, sav.yaml), default sav.scm"))
 
+(define (execute sav-file targets)
+  (define descriptor (saven:build-file->module-descriptor sav-file))
+  (define sorted-modules (saven:analyse-descriptor descriptor))
+  (define lifecycle (saven:lifecycle sorted-modules))
+  (lifecycle targets))
+
 (define (main args)
   (with-args (cdr args)
       ((file (#\f "file") #t "sav.scm")
@@ -18,4 +24,4 @@ exec sagittarius $0 "$@"
     (unless (file-exists? file)
       (print file " doesn't exist")
       (usage))
-    (apply saven:lifecycle file rest)))
+    (execute file rest)))
