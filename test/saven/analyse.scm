@@ -18,14 +18,16 @@ exec sagittarius -L$lib $me "$@"
    "1.0"
    '()
    '()
-   #f))
+   #f
+   "./child0"))
 (define child1
   (make-saven:module-descriptor
    "child1"
    "1.0"
    '()
    '()
-   #f))
+   #f
+   "./child1"))
 (define child2
   (make-saven:module-descriptor
    "child2"
@@ -33,7 +35,8 @@ exec sagittarius -L$lib $me "$@"
    '((module (name "child0"))
      (module (name "child1")))
    '()
-   #f))
+   #f
+   "./child2"))
 
 (define root-module
   (make-saven:module-descriptor
@@ -41,7 +44,8 @@ exec sagittarius -L$lib $me "$@"
    "1.0"
    '()
    (list child2 child0 child1)
-   #f))
+   #f
+   "."))
 
 (test-equal '("root" "child0" "child1" "child2")
 	    (map saven:module-descriptor-name

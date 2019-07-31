@@ -19,10 +19,10 @@ exec sagittarius -L$lib $me "$@"
 	      (saven:build-file->module-descriptor root-sav-file)))
 (let ((descriptor (saven:build-file->module-descriptor root-sav-file)))
   (test-equal "version" "1.0" (saven:module-descriptor-version descriptor))
-  (test-equal 2 (length (saven:module-descriptor-modules descriptor)))
-  (test-equal '(#t #t) (map saven:module-descriptor?
-			    (saven:module-descriptor-modules descriptor)))
-  (test-assert (lset= string=? '("foo" "bar")
+  (test-equal 3 (length (saven:module-descriptor-modules descriptor)))
+  (test-equal '(#t #t #t) (map saven:module-descriptor?
+			       (saven:module-descriptor-modules descriptor)))
+  (test-assert (lset= string=? '("foo" "bar" "baz")
 		      (map saven:module-descriptor-name
 			   (saven:module-descriptor-modules descriptor))))
   (test-equal 2 (length (saven:module-descriptor-dependencies descriptor))))

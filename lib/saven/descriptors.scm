@@ -7,6 +7,7 @@
 	    saven:module-descriptor-dependencies
 	    saven:module-descriptor-modules
 	    saven:module-descriptor-build
+	    saven:module-descriptor-location
 
 	    saven:build-file->module-descriptor
 	    ;; for testing
@@ -24,13 +25,14 @@
 	  version
 	  dependencies ;; lazily initialised, at this moment it's raw sexp
 	  modules
-	  build))
+	  build
+	  location))
 
 (define (saven:build-file->module-descriptor sav-file)
   (let-values (((dir name ext) (decompose-path sav-file)))
-    (build-file->module-descriptor dir sav-file)))
+    (build-file->module-descriptor dir dir sav-file)))
 
-(define (build-file->module-descriptor root-dir sav-file)
+(define (build-file->module-descriptor root-dir cur-dir sav-file)
   (define saven (saven:read-build-file sav-file))
   (define (find-modules saven)
     (define (->modules name)
@@ -47,7 +49,7 @@
 	      (assertion-violation 'saven:build-file->module-descriptor
 				   "Specified module doesn't contain sav file"
 				   name))
-	    (build-file->module-descriptor root-dir file)))))
+	    (build-file->module-descriptor root-dir dir file)))))
 				     
     (cond ((assq 'modules (cdr saven)) => (lambda (m) (map ->modules (cdr m))))
 	  (else '())))
@@ -63,7 +65,8 @@
      (cond ((assq 'dependencies (cdr saven)) => cdr)
 	   (else '()))
      modules
-     #f)))
+     #f
+     cur-dir)))
 
 (define (find-name saven root-dir sav-file)
   (define (extract root-dir sav-file)

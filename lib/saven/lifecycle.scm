@@ -14,7 +14,7 @@
 	       '() executions)))
 
 (define (saven:module->execution module)
-  (define root-context (make-saven:root-phase-context (current-directory)))
+  
   (lambda (targets)
     (display (saven:module-descriptor-name module)) (newline)))
 
