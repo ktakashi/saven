@@ -9,6 +9,7 @@
 	    saven-phase:post-test
 	    saven-phase:package
 
+	    make-saven:phase-context
 	    saven:phase-context?
 	    )
     (import (rnrs)

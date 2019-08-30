@@ -5,18 +5,14 @@
     (import (rnrs)
 	    (sagittarius)
 	    (saven descriptors)
-	    (saven phases))
+	    (saven phases)
+	    (saven execution))
 
 (define (saven:lifecycle modules)
-  (define executions (map saven:module->execution modules))
+  (define executions (map saven:execution modules))
   (lambda (targets)
     (fold-left (lambda (results execution) (cons (execution targets) results))
 	       '() executions)))
-
-(define (saven:module->execution module)
-  
-  (lambda (targets)
-    (display (saven:module-descriptor-name module)) (newline)))
 
 ;; phase and builtin target mapping
 ;; - pre-build   +---+
