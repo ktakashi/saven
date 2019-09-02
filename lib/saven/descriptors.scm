@@ -37,11 +37,11 @@
   (define (find-modules saven)
     (define (->modules name)
       (let-values (((dir file ext) (decompose-path sav-file)))
-	(parameterize ((current-directory dir))
+	(define new-dir (build-path dir name))
+	(parameterize ((current-directory new-dir))
 	  (let ((file (exists
 		       (lambda (e)
 			 (let ((file (build-path* (current-directory)
-						  name
 						  (string-append "sav." e))))
 			   (and (file-exists? file) file)))
 		       (saven:supported-file-extensions))))
@@ -49,7 +49,7 @@
 	      (assertion-violation 'saven:build-file->module-descriptor
 				   "Specified module doesn't contain sav file"
 				   name))
-	    (build-file->module-descriptor root-dir dir file)))))
+	    (build-file->module-descriptor root-dir new-dir file)))))
 				     
     (cond ((assq 'modules (cdr saven)) => (lambda (m) (map ->modules (cdr m))))
 	  (else '())))

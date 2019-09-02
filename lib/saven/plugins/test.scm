@@ -3,8 +3,13 @@
     (export initialize-plugin
 	    terminate-plugin)
     (import (rnrs)
+	    (sagittarius)
+	    (sagittarius process)
+	    (saven phases)
 	    (saven plugins context)
-	    (saven descriptors))
+	    (saven descriptors)
+	    (srfi :13 strings)
+	    (util file))
 
 (define-record-type test-plugin-context
   (parent <saven:plugin-context>)
@@ -14,9 +19,50 @@
 
 (define (initialize-plugin config)
   (let ((c (make-test-plugin-context)))
-    (saven:plugin-context-register-phase!
-     c 'test
-     (lambda (phase-ctx) (display "Test plugin") (newline)))))
+    (saven:plugin-context-register-phase! c 'test
+     (test-plugin-executor c config))))
+
+(define +default-process-name+
+  (cond-expand (windows "sash") (else "sagittarius")))
+(define +default-load-path-prefix+ "-L")
+(define +default-argument-terminator+ "--")
+
+(define (test-plugin-executor c config)
+  (define (assq/default n l default)
+    (cond ((assq n l) => cadr) (else default)))
+  (define process (assq/default 'process config +default-process-name+))
+  (define prefix (assq/default 'path-prefix config +default-load-path-prefix+))
+  (define terminator
+    (assq/default 'argument-terminator config +default-argument-terminator+))
+  (lambda (phase-ctx)
+    (define working-directory
+      (saven:phase-context-working-directory phase-ctx))
+    (define load-paths
+      (saven:phase-context-load-paths phase-ctx))
+    (define test-load-paths
+      (saven:phase-context-test-load-paths phase-ctx))
+    (define test-source-directory
+      (saven:phase-context-test-source-directory phase-ctx))
+    (define test-working-directory
+      (saven:phase-context-test-working-directory phase-ctx))
+    ;; create test working directory, if it's not there yet
+    (create-directory* test-working-directory)
+    (copy-directory test-source-directory test-working-directory)
+    (let* ((test-files (find-files test-working-directory :pattern "\\.scm$"))
+	   (paths (append load-paths test-load-paths))
+	   (p&r* (map (lambda (file)
+			(run-it process terminator
+			 (map (lambda (p) (string-append prefix p)) paths)
+			 file)) test-files)))
+      ;; (for-each process-wait p*)
+      (map extract-result p&r*))))
+
+(define (run-it name terminator load-paths file)
+  (let ((p (create-process name `(,@load-paths ,terminator ,file))))
+    (cons p (process-wait p))))
+    
+(define (extract-result p&r)
+  (display (utf8->string (get-bytevector-all (process-output-port (car p&r))))))
 
 
 (define (terminate-plugin context)

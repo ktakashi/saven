@@ -11,6 +11,12 @@
 
 	    make-saven:phase-context
 	    saven:phase-context?
+	    saven:phase-context-load-paths
+	    saven:phase-context-test-load-paths
+	    saven:phase-context-source-directory
+	    saven:phase-context-test-source-directory
+	    saven:phase-context-working-directory
+	    saven:phase-context-test-working-directory
 	    )
     (import (rnrs)
 	    (saven descriptors))
@@ -18,6 +24,8 @@
 (define-record-type saven:phase-context
   (fields load-paths
 	  test-load-paths
+	  source-directory
+	  test-source-directory
 	  working-directory
 	  test-working-directory
 	  module))

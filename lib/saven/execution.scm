@@ -37,12 +37,15 @@
 (define (saven:execution module)
   (define-values (load-paths test-load-paths)
     (retrieve-load-paths (saven:module-descriptor-dependencies module)))
+  (define source-directory
+    (build-path (saven:module-descriptor-location module) "src"))
   (define target-directory
     ;; TODO make it configurable
     (build-path (saven:module-descriptor-location module) "target"))
   (define phase-context
     (make-saven:phase-context load-paths test-load-paths
-			      ;; TODO make them configurable
+			      (build-path source-directory "main")
+			      (build-path source-directory "test")
 			      (build-path target-directory "main")
 			      (build-path target-directory "test")
 			      module))
