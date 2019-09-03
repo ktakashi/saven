@@ -46,6 +46,7 @@
     (make-saven:phase-context load-paths test-load-paths
 			      (build-path source-directory "main")
 			      (build-path source-directory "test")
+			      target-directory
 			      (build-path target-directory "main")
 			      (build-path target-directory "test")
 			      module))

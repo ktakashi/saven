@@ -15,8 +15,10 @@
 	    saven:phase-context-test-load-paths
 	    saven:phase-context-source-directory
 	    saven:phase-context-test-source-directory
+	    saven:phase-context-target-directory
 	    saven:phase-context-working-directory
 	    saven:phase-context-test-working-directory
+	    saven:phase-context-module
 	    )
     (import (rnrs)
 	    (saven descriptors))
@@ -26,6 +28,7 @@
 	  test-load-paths
 	  source-directory
 	  test-source-directory
+	  target-directory
 	  working-directory
 	  test-working-directory
 	  module))
