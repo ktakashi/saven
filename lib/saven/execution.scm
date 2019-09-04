@@ -29,10 +29,12 @@
     post-test
     package))
 
-(define +default-package-plugin+
-  (eval '(initialize-plugin ()) (environment '(saven plugins package))))
+(define +default-build-plugin+
+  (eval '(initialize-plugin ()) (environment '(saven plugins build))))
 (define +default-test-plugin+
   (eval '(initialize-plugin ()) (environment '(saven plugins test))))
+(define +default-package-plugin+
+  (eval '(initialize-plugin ()) (environment '(saven plugins package))))
 
 (define (saven:execution module)
   (define-values (load-paths test-load-paths)
@@ -51,7 +53,9 @@
 			      (build-path target-directory "test")
 			      module))
   (define plugin-contexts
-    (list +default-package-plugin+ +default-test-plugin+))
+    (list +default-build-plugin+
+	  +default-test-plugin+
+	  +default-package-plugin+))
   ;; get plugin if we support
   (lambda (targets)
     (define phases

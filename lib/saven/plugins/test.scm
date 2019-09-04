@@ -62,8 +62,13 @@
     (cons p (process-wait p))))
     
 (define (extract-result p&r)
-  (display (utf8->string (get-bytevector-all (process-output-port (car p&r))))))
-
+  (let* ((p (car p&r))
+	 (in (process-output-port p))
+	 (err (process-error-port p)))
+    (let ((inb (get-bytevector-all in))
+	  (errb (get-bytevector-all err)))
+      (unless (eof-object? errb) (display (utf8->string errb)))
+      (unless (eof-object? inb) (display (utf8->string inb))))))
 
 (define (terminate-plugin context)
   (assert (test-plugin-context? context))
