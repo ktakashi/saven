@@ -2,14 +2,16 @@
 #!nounbound
 (library (saven dependencies context)
     (export saven:lookup-module
+	    saven:local-repository-path
 	    make-saven:dependencies-context
 	    saven:dependencies-context?)
     (import (rnrs)
+	    (util file)
 	    (saven descriptors))
 
 (define-record-type saven:dependencies-context
-  (fields dependency modules)
-  (protocol (lambda (p) (lambda (d m) (p d (travese-module m))))))
+  (fields dependency module modules)
+  (protocol (lambda (p) (lambda (d m) (p d m (travese-module m))))))
 
 (define (travese-module module)
   (define root-module (saven:module-descriptor-root-module module))
@@ -23,5 +25,11 @@
 
 (define (saven:lookup-module context name)
   (hashtable-ref (saven:dependencies-context-modules context) name #f))
+
+(define (saven:local-repository-path context)
+  (define module (saven:dependencies-context-module context))
+  (define root-module (saven:module-descriptor-root-module module))
+  ;; TODO move the path
+  (build-path* (saven:module-descriptor-location root-module) ".sav/deps"))
 
 )

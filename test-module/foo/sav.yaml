@@ -2,3 +2,5 @@
 dependencies:
   - type: github
     name: ktakashi/r6rs-pffi
+    paths:
+      - src

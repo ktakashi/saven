@@ -76,21 +76,23 @@
 (define (retrieve-load-paths module)
   (define dependencies (saven:module-descriptor-dependencies module))
   (fold2 (lambda (d suc err)
-	   (let ((path (get-path module d))
+	   (let ((path (get-paths module d))
 		 (scope (assq 'scope (cdr d))))
 	     (if path
 		 (if (and scope (equal? "test" (cadr scope)))
-		     (values suc (cons path err))
-		     (values (cons path suc) err))
+		     (values suc (append path err))
+		     (values (append path suc) err))
 		 (values suc err))))
 	 '()  () dependencies))
 
-(define (get-path module dependency)
+(define (get-paths module dependency)
   (define type (car dependency))
   (define context (make-saven:dependencies-context dependency module))
   (guard (e (else
 	     ;; TODO
-	     (display (condition-message e)) (newline)
+	     (report-error e)
+	     ;;(display (condition-message e)) (newline)
+	     ;;(display dependency) (newline)
 	     #f))
     (eval `(retrieve-loadpath ,context ',dependency)
 	  (environment '(only (rnrs) quote)

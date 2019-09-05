@@ -13,6 +13,6 @@
   (define module (saven:lookup-module context name))
   (let ((location (saven:module-descriptor-location module)))
     ;; TODO this should be taken from somewhere
-    (build-path* location "target" "main")))
+    (list (build-path* location "target" "main"))))
 
 )
