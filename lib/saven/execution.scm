@@ -37,8 +37,7 @@
   (eval '(initialize-plugin ()) (environment '(saven plugins package))))
 
 (define (saven:execution module)
-  (define-values (load-paths test-load-paths)
-    (retrieve-load-paths (saven:module-descriptor-dependencies module)))
+  (define-values (load-paths test-load-paths) (retrieve-load-paths module))
   (define source-directory
     (build-path (saven:module-descriptor-location module) "src"))
   (define target-directory
@@ -72,8 +71,10 @@
 (define (order-phases phase-list)
   (filter-map (lambda (p) (and (memq p phase-list) p)) +phase-order+))
 
-(define (retrieve-load-paths dependencies)
+(define (retrieve-load-paths module)
+  (define dependencies (saven:module-descriptor-dependencies module))
   ;; TODO
+  (display dependencies) (newline)
   (values '() '()))
 
 (define (target->phases target)

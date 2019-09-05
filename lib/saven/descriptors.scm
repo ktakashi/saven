@@ -8,12 +8,14 @@
 	    saven:module-descriptor-modules
 	    saven:module-descriptor-build
 	    saven:module-descriptor-location
+	    saven:module-descriptor-parent
 
 	    saven:build-file->module-descriptor
 	    ;; for testing
 	    make-saven:module-descriptor
 	    )
     (import (rnrs)
+	    (rnrs r5rs) ;; for promise
 	    (sagittarius)
 	    (util file)
 	    (srfi :13 strings)
@@ -26,14 +28,24 @@
 	  dependencies ;; lazily initialised, at this moment it's raw sexp
 	  modules
 	  build
-	  location))
+	  location
+	  parent$))
+(define (saven:module-descriptor-parent module)
+  (force (saven:module-descriptor-parent$ module)))
 
 (define (saven:build-file->module-descriptor sav-file)
   (let-values (((dir name ext) (decompose-path sav-file)))
     (build-file->module-descriptor dir dir sav-file)))
 
 (define (build-file->module-descriptor root-dir cur-dir sav-file)
+  (define table (make-hashtable string-hash string=?))
+  (let ((r (%build-file->module-descriptor root-dir cur-dir sav-file table)))
+    (hashtable-set! table root-dir r)
+    r))
+
+(define (%build-file->module-descriptor root-dir cur-dir sav-file table)
   (define saven (saven:read-build-file sav-file))
+  (define (parent-promise) (delay (hashtable-ref table root-dir #f)))
   (define (find-modules saven)
     (define (->modules name)
       (let-values (((dir file ext) (decompose-path sav-file)))
@@ -49,7 +61,7 @@
 	      (assertion-violation 'saven:build-file->module-descriptor
 				   "Specified module doesn't contain sav file"
 				   name))
-	    (build-file->module-descriptor root-dir new-dir file)))))
+	    (%build-file->module-descriptor root-dir new-dir file table)))))
 				     
     (cond ((assq 'modules (cdr saven)) => (lambda (m) (map ->modules (cdr m))))
 	  (else '())))
@@ -66,7 +78,8 @@
 	   (else '()))
      modules
      #f
-     cur-dir)))
+     cur-dir
+     (parent-promise))))
 
 (define (find-name saven root-dir sav-file)
   (define (extract root-dir sav-file)

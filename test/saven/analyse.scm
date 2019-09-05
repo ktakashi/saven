@@ -6,11 +6,14 @@ cd $(dirname $me)/../../
 exec sagittarius -L$lib $me "$@"
 |#
 (import (rnrs)
+	(rnrs r5rs)
 	(saven analyse)
 	(saven descriptors)
 	(srfi :64))
 
 (test-begin "Module descriptor analyser")
+
+(define parent (delay root-module))
 
 (define child0
   (make-saven:module-descriptor
@@ -19,7 +22,8 @@ exec sagittarius -L$lib $me "$@"
    '()
    '()
    #f
-   "./child0"))
+   "./child0"
+   parent))
 (define child1
   (make-saven:module-descriptor
    "child1"
@@ -27,7 +31,8 @@ exec sagittarius -L$lib $me "$@"
    '()
    '()
    #f
-   "./child1"))
+   "./child1"
+   parent))
 (define child2
   (make-saven:module-descriptor
    "child2"
@@ -36,7 +41,8 @@ exec sagittarius -L$lib $me "$@"
      (module (name "child1")))
    '()
    #f
-   "./child2"))
+   "./child2"
+   parent))
 
 (define root-module
   (make-saven:module-descriptor
@@ -45,13 +51,14 @@ exec sagittarius -L$lib $me "$@"
    '()
    (list child2 child0 child1)
    #f
-   "."))
+   "."
+   parent))
 
 (test-equal '("root" "child0" "child1" "child2")
 	    (map saven:module-descriptor-name
 		 (saven:analyse-descriptor
 		  root-module)))
-
+(test-equal root-module (saven:module-descriptor-parent child0))
 (test-end)
 
 (exit (test-runner-fail-count (test-runner-get)))
