@@ -23,6 +23,7 @@ exec sagittarius -L$lib $me "$@"
    '()
    #f
    "./child0"
+   parent
    parent))
 (define child1
   (make-saven:module-descriptor
@@ -32,6 +33,7 @@ exec sagittarius -L$lib $me "$@"
    '()
    #f
    "./child1"
+   parent
    parent))
 (define child2
   (make-saven:module-descriptor
@@ -42,6 +44,7 @@ exec sagittarius -L$lib $me "$@"
    '()
    #f
    "./child2"
+   parent
    parent))
 
 (define root-module
@@ -52,13 +55,14 @@ exec sagittarius -L$lib $me "$@"
    (list child2 child0 child1)
    #f
    "."
+   parent
    parent))
 
 (test-equal '("root" "child0" "child1" "child2")
 	    (map saven:module-descriptor-name
 		 (saven:analyse-descriptor
 		  root-module)))
-(test-equal root-module (saven:module-descriptor-parent child0))
+(test-equal root-module (saven:module-descriptor-parent-module child0))
 (test-end)
 
 (exit (test-runner-fail-count (test-runner-get)))

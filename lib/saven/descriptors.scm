@@ -8,7 +8,8 @@
 	    saven:module-descriptor-modules
 	    saven:module-descriptor-build
 	    saven:module-descriptor-location
-	    saven:module-descriptor-parent
+	    saven:module-descriptor-parent-module
+	    saven:module-descriptor-root-module
 
 	    saven:build-file->module-descriptor
 	    ;; for testing
@@ -29,9 +30,12 @@
 	  modules
 	  build
 	  location
-	  parent$))
-(define (saven:module-descriptor-parent module)
+	  parent$
+	  root$))
+(define (saven:module-descriptor-parent-module module)
   (force (saven:module-descriptor-parent$ module)))
+(define (saven:module-descriptor-root-module module)
+  (force (saven:module-descriptor-root$ module)))
 
 (define (saven:build-file->module-descriptor sav-file)
   (let-values (((dir name ext) (decompose-path sav-file)))
@@ -39,13 +43,16 @@
 
 (define (build-file->module-descriptor root-dir cur-dir sav-file)
   (define table (make-hashtable string-hash string=?))
-  (let ((r (%build-file->module-descriptor root-dir cur-dir sav-file table)))
+  (let ((r (%build-file->module-descriptor root-dir #f
+					   cur-dir sav-file table)))
     (hashtable-set! table root-dir r)
     r))
 
-(define (%build-file->module-descriptor root-dir cur-dir sav-file table)
+(define (%build-file->module-descriptor root-dir parent-dir
+					cur-dir sav-file table)
   (define saven (saven:read-build-file sav-file))
-  (define (parent-promise) (delay (hashtable-ref table root-dir #f)))
+  (define (parent-promise) (delay (hashtable-ref table parent-dir #f)))
+  (define (root-promise) (delay (hashtable-ref table root-dir #f)))
   (define (find-modules saven)
     (define (->modules name)
       (let-values (((dir file ext) (decompose-path sav-file)))
@@ -61,7 +68,7 @@
 	      (assertion-violation 'saven:build-file->module-descriptor
 				   "Specified module doesn't contain sav file"
 				   name))
-	    (%build-file->module-descriptor root-dir new-dir file table)))))
+	    (%build-file->module-descriptor root-dir dir new-dir file table)))))
 				     
     (cond ((assq 'modules (cdr saven)) => (lambda (m) (map ->modules (cdr m))))
 	  (else '())))
@@ -79,7 +86,8 @@
      modules
      #f
      cur-dir
-     (parent-promise))))
+     (parent-promise)
+     (root-promise))))
 
 (define (find-name saven root-dir sav-file)
   (define (extract root-dir sav-file)
