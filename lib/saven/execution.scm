@@ -7,9 +7,11 @@
 	    (sagittarius)
 	    (sagittarius control)
 	    (srfi :1 lists)
+	    (util list)
 	    (saven descriptors)
 	    (saven phases)
-	    (saven plugins))
+	    (saven plugins)
+	    (saven dependencies))
 
 (define +builtin-targets+
   '(
@@ -73,9 +75,26 @@
 
 (define (retrieve-load-paths module)
   (define dependencies (saven:module-descriptor-dependencies module))
-  ;; TODO
-  (display dependencies) (newline)
-  (values '() '()))
+  (fold2 (lambda (d suc err)
+	   (let ((path (get-path module d))
+		 (scope (assq 'scope (cdr d))))
+	     (if path
+		 (if (and scope (equal? "test" (cadr scope)))
+		     (values suc (cons path err))
+		     (values (cons path suc) err))
+		 (values suc err))))
+	 '()  () dependencies))
+
+(define (get-path module dependency)
+  (define type (car dependency))
+  (define context (make-saven:dependencies-context dependency module))
+  (guard (e (else
+	     ;; TODO
+	     (display (condition-message e)) (newline)
+	     #f))
+    (eval `(retrieve-loadpath ,context ',dependency)
+	  (environment '(only (rnrs) quote)
+		       `(saven dependencies ,type)))))
 
 (define (target->phases target)
   (define (resolve-dependency slot)

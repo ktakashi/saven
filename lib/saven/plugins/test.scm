@@ -49,7 +49,7 @@
     (create-directory* test-working-directory)
     (copy-directory test-source-directory test-working-directory)
     (let* ((test-files (find-files test-working-directory :pattern "\\.scm$"))
-	   (paths (append load-paths test-load-paths))
+	   (paths (append (list working-directory) load-paths test-load-paths))
 	   (p&r* (map (lambda (file)
 			(run-it process terminator
 			 (map (lambda (p) (string-append prefix p)) paths)
