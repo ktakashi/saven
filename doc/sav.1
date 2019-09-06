@@ -1,0 +1,33 @@
+.TH "sav" "1" "" ""
+.SH NAME
+sav \- Scheme dependency management command
+.SH SYNOPSIS
+.B sav
+[\fB\-f\fR \fISAV-FILE\fR]
+.IR target ...
+.SH DESCRIPTION
+.B save
+modifies files by toggling a randomly chosen bit.
+.SH OPTIONS
+.TP
+.BR \-f ", " \-\-file =\fISAV-FILE\fR
+Using the specified saven file. Default is sav.yaml
+.SH BUILD TARGETS
+.TP
+.BR build
+Building the saven module
+.TP
+.BR test
+Executes tests. Test files must be
+.I .scm
+file.
+.TP
+.BR package
+Composing the module to destributable package. The artifact will be located to
+.I target/
+directory of the module.
+.TP
+.BR clean
+Cleaning the module. This target removes the
+.I target/
+directires.

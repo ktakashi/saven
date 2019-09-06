@@ -19,7 +19,7 @@ exec sagittarius $0 "$@"
 
 (define (main args)
   (with-args (cdr args)
-      ((file (#\f "file") #t "sav.scm")
+      ((file (#\f "file") #t "sav.yaml")
        . rest)
     (unless (file-exists? file)
       (print file " doesn't exist")
