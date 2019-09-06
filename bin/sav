@@ -25,4 +25,4 @@ exec sagittarius $0 "$@"
     (unless (file-exists? file)
       (print file " doesn't exist")
       (usage))
-    (execute file rest)))
+    (execute (absolute-path file) rest)))
