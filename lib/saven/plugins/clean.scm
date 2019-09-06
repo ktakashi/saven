@@ -24,7 +24,8 @@
     (define target-directory
       (saven:phase-context-target-directory phase-ctx))
     (saven:console-info-write "Removing ~a" target-directory)
-    (delete-directory* target-directory)))
+    (when (file-exists? target-directory)
+      (delete-directory* target-directory))))
 
 (define (terminate-plugin context)
   (assert (clean-plugin-context? context))
