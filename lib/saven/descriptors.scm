@@ -21,6 +21,7 @@
 	    (util file)
 	    (srfi :13 strings)
 	    (srfi :39 parameters)
+	    (saven console)
 	    (saven build-file))
 
 (define-record-type saven:module-descriptor
@@ -43,6 +44,8 @@
 
 (define (build-file->module-descriptor root-dir cur-dir sav-file)
   (define table (make-hashtable string-hash string=?))
+
+  (saven:console-info-write "Loading saven file ~a" sav-file)
   (let ((r (%build-file->module-descriptor root-dir #f
 					   cur-dir sav-file table)))
     (hashtable-set! table root-dir r)

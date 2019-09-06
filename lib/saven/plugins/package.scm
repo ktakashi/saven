@@ -8,6 +8,7 @@
 	    (util file)
 	    (saven plugins context)
 	    (saven phases)
+	    (saven console)
 	    (saven descriptors))
 
 (define-record-type package-plugin-context
@@ -28,14 +29,16 @@
     (define target-directory
       (saven:phase-context-target-directory phase-ctx))
     ;; package it the module to tar.gz (for now)
-    (let ((files (find-files working-directory))
-	  (dst-file (build-path target-directory
-			(string-append (saven:module-descriptor-name
-					(saven:phase-context-module phase-ctx))
+    (let* ((files (find-files working-directory))
+	   (name (saven:module-descriptor-name
+		  (saven:phase-context-module phase-ctx)))
+	   (dst-file (build-path target-directory
+				 (string-append name
 				       ".tar.gz"))))
       (when (file-exists? dst-file) (delete-file dst-file))
       (unless (null? files)
 	(let ((out (open-file-output-port dst-file (file-options no-fail))))
+	  (saven:console-info-write "Packaging '~a' to ~a" name dst-file)
 	  (call-with-port (open-gzip-output-port out :owner? #t)
 	    (lambda (out)
 	      (call-with-archive-output 'tar out

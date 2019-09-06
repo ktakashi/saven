@@ -8,6 +8,7 @@
 	    (sagittarius control)
 	    (srfi :1 lists)
 	    (util list)
+	    (saven console)
 	    (saven descriptors)
 	    (saven phases)
 	    (saven plugins)
@@ -37,6 +38,8 @@
   (eval '(initialize-plugin ()) (environment '(saven plugins test))))
 (define +default-package-plugin+
   (eval '(initialize-plugin ()) (environment '(saven plugins package))))
+(define +clean-plugin+
+  (eval '(initialize-plugin ()) (environment '(saven plugins clean))))
 
 (define (saven:execution module)
   (define-values (load-paths test-load-paths) (retrieve-load-paths module))
@@ -56,7 +59,8 @@
   (define plugin-contexts
     (list +default-build-plugin+
 	  +default-test-plugin+
-	  +default-package-plugin+))
+	  +default-package-plugin+
+	  +clean-plugin+))
   ;; get plugin if we support
   (lambda (targets)
     (define phases
@@ -64,7 +68,10 @@
        (apply lset-union eq?
 	      (map (lambda (target)
 		     (target->phases (string->symbol target))) targets))))
+    (saven:console-info-write "Building module '~a'"
+			      (saven:module-descriptor-name module))
     (for-each (lambda (phase)
+		;; (saven:console-info-write "Phase ~a" phase)
 		(for-each (lambda (plugin)
 			    (saven:plugin-context-execute!
 			     plugin phase phase-context))

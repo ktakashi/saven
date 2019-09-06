@@ -1,5 +1,5 @@
 #!/bin/sh
-#| -*- mode: schem; coding: utf-8; -*-
+#| -*- mode: scheme; coding: utf-8; -*-
 exec sagittarius $0 "$@"
 |#
 (import (rnrs)

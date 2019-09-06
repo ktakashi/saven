@@ -10,6 +10,7 @@
 	    (archive)
 	    (util file)
 	    (sagittarius regex)
+	    (saven console)
 	    (saven dependencies context))
 
 (define +github-url+ "https://github.com/")
@@ -53,6 +54,7 @@
       (define (local-repo-destinator e)
 	(let ((name (archive-entry-name e)))
 	  (build-path download-path name)))
+      (saven:console-info-write "Downloading ~a" url)
       (let-values (((s h b) (http-request 'GET server path
 					  :secure (string=? scheme "https")
 					  :receiver receiver

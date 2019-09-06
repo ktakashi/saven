@@ -6,6 +6,7 @@
 	    (sagittarius)
 	    (sagittarius process)
 	    (saven phases)
+	    (saven console)
 	    (saven plugins context)
 	    (saven descriptors)
 	    (srfi :13 strings)
@@ -59,16 +60,22 @@
 
 (define (run-it name terminator load-paths file)
   (let ((p (create-process name `(,@load-paths ,terminator ,file))))
-    (cons p (process-wait p))))
+    (cons* p (process-wait p) file)))
     
 (define (extract-result p&r)
+  (define (get-message errb inb)
+    (let-values (((o e) (open-string-output-port)))
+      (unless (eof-object? errb) (display (utf8->string errb) o))
+      (unless (eof-object? inb) (display (utf8->string inb) o))
+      (e)))
   (let* ((p (car p&r))
+	 (f (cddr p&r))
 	 (in (process-output-port p))
 	 (err (process-error-port p)))
     (let ((inb (get-bytevector-all in))
 	  (errb (get-bytevector-all err)))
-      (unless (eof-object? errb) (display (utf8->string errb)))
-      (unless (eof-object? inb) (display (utf8->string inb))))))
+      (saven:console-info-write "Result of '~a'~%~a" f
+				(get-message errb inb)))))
 
 (define (terminate-plugin context)
   (assert (test-plugin-context? context))
