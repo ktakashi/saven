@@ -88,15 +88,9 @@
 (define (get-paths module dependency)
   (define type (car dependency))
   (define context (make-saven:dependencies-context dependency module))
-  (guard (e (else
-	     ;; TODO
-	     (report-error e)
-	     ;;(display (condition-message e)) (newline)
-	     ;;(display dependency) (newline)
-	     #f))
-    (eval `(retrieve-loadpath ,context ',dependency)
-	  (environment '(only (rnrs) quote)
-		       `(saven dependencies ,type)))))
+  (eval `(retrieve-loadpath ,context ',dependency)
+	(environment '(only (rnrs) quote)
+		     `(saven dependencies ,type))))
 
 (define (target->phases target)
   (define (resolve-dependency slot)
