@@ -9,7 +9,8 @@ exec sagittarius $0 "$@"
 (define (usage)
   (print "sav [OPTIONS] targets ...")
   (print "OPTIONS:")
-  (print " -f sav file (e.g. sav.scm, sav.yaml), default sav.scm"))
+  (print " -f sav file (e.g. sav.scm, sav.yaml), default sav.scm")
+  (exit 1))
 
 (define (execute sav-file targets)
   (define descriptor (saven:build-file->module-descriptor sav-file))
