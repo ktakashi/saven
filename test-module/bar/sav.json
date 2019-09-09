@@ -1,2 +1,6 @@
 {
+    "directories": {
+	"source": [ "src" ],
+	"test": [ "test1", "test2" ]
+    }
 }

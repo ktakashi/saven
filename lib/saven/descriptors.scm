@@ -8,6 +8,8 @@
 	    saven:module-descriptor-modules
 	    saven:module-descriptor-build
 	    saven:module-descriptor-location
+	    saven:module-descriptor-source-directories
+	    saven:module-descriptor-test-source-directories
 	    saven:module-descriptor-parent-module
 	    saven:module-descriptor-root-module
 
@@ -19,6 +21,7 @@
 	    (rnrs r5rs) ;; for promise
 	    (sagittarius)
 	    (util file)
+	    (util vector)
 	    (srfi :13 strings)
 	    (srfi :39 parameters)
 	    (saven console)
@@ -31,6 +34,8 @@
 	  modules
 	  build
 	  location
+	  source-directories
+	  test-source-directories
 	  parent$
 	  root$))
 (define (saven:module-descriptor-parent-module module)
@@ -75,11 +80,16 @@
 				     
     (cond ((assq 'modules (cdr saven)) => (lambda (m) (map ->modules (cdr m))))
 	  (else '())))
+  (define (find-directory dirs key default)
+    (define v (and dirs (cadr dirs)))
+    (cond ((and v (vector-find (lambda (s) (string=? (car s) key)) v)))
+	  (else default)))
   (unless (and (pair? saven) (eq? (car saven) 'saven))
     (assertion-violation 'saven:build-file->module-descriptor
 			 "Unknown file" sav-file))
 
-  (let ((modules (find-modules saven)))
+  (let ((modules (find-modules saven))
+	(dirs (assq 'directories saven)))
     (make-saven:module-descriptor
      (find-name saven root-dir sav-file)
      (cond ((assq 'version (cdr saven)) => cadr)
@@ -89,6 +99,8 @@
      modules
      #f
      cur-dir
+     (find-directory dirs "source" '("src/main"))
+     (find-directory dirs "test" '("src/test"))
      (parent-promise)
      (root-promise))))
 

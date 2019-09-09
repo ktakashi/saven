@@ -23,10 +23,12 @@
   (lambda (phase-ctx)
     (define working-directory
       (saven:phase-context-working-directory phase-ctx))
-    (define source-directory
-      (saven:phase-context-source-directory phase-ctx))
+    (define source-directories
+      (saven:phase-context-source-directories phase-ctx))
     (create-directory* working-directory)
-    (copy-directory source-directory working-directory)))
+    (for-each (lambda (source-directory)
+		(copy-directory source-directory working-directory))
+	      source-directories)))
 
 (define (terminate-plugin context)
   (assert (build-plugin-context? context))

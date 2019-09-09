@@ -44,14 +44,20 @@
 (define (saven:execution module)
   (define-values (load-paths test-load-paths) (retrieve-load-paths module))
   (define source-directory
-    (build-path (saven:module-descriptor-location module) "src"))
+    (saven:module-descriptor-location module))
   (define target-directory
     ;; TODO make it configurable
     (build-path (saven:module-descriptor-location module) "target"))
+  (define (module->source-directories module)
+    (map (lambda (d) (build-path source-directory d))
+	 (saven:module-descriptor-source-directories module)))
+  (define (module->test-directories module)
+    (map (lambda (d) (build-path source-directory d))
+	 (saven:module-descriptor-test-source-directories module)))
   (define phase-context
     (make-saven:phase-context load-paths test-load-paths
-			      (build-path source-directory "main")
-			      (build-path source-directory "test")
+			      (module->source-directories module)
+			      (module->test-directories module)
 			      target-directory
 			      (build-path target-directory "main")
 			      (build-path target-directory "test")

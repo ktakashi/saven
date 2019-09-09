@@ -42,13 +42,15 @@
       (saven:phase-context-load-paths phase-ctx))
     (define test-load-paths
       (saven:phase-context-test-load-paths phase-ctx))
-    (define test-source-directory
-      (saven:phase-context-test-source-directory phase-ctx))
+    (define test-source-directories
+      (saven:phase-context-test-source-directories phase-ctx))
     (define test-working-directory
       (saven:phase-context-test-working-directory phase-ctx))
     ;; create test working directory, if it's not there yet
     (create-directory* test-working-directory)
-    (copy-directory test-source-directory test-working-directory)
+    (for-each (lambda (test-source-directory)
+		(copy-directory test-source-directory test-working-directory))
+	      test-source-directories)
     (let* ((test-files (find-files test-working-directory :pattern "\\.scm$"))
 	   (paths (append (list working-directory) load-paths test-load-paths))
 	   (p&r* (map (lambda (file)
