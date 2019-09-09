@@ -3,13 +3,14 @@
 exec sagittarius $0 "$@"
 |#
 (import (rnrs)
+	(sagittarius)
 	(saven)
 	(getopt))
 
 (define (usage)
   (print "sav [OPTIONS] targets ...")
   (print "OPTIONS:")
-  (print " -f sav file (e.g. sav.scm, sav.yaml), default sav.scm")
+  (print " -f sav file (e.g. sav.scm, sav.yaml)")
   (exit 1))
 
 (define (execute sav-file targets)
@@ -18,11 +19,17 @@ exec sagittarius $0 "$@"
   (define lifecycle (saven:lifecycle sorted-modules))
   (lifecycle targets))
 
+(define (find-saven-file exts)
+  (find (lambda (ext)
+	  (let ((file (string-append "sav." ext)))
+	    (and (file-exists? file) file))) exts))
+
 (define (main args)
   (with-args (cdr args)
-      ((file (#\f "file") #t "sav.yaml")
+      ((file (#\f "file") #t #f)
        . rest)
-    (unless (file-exists? file)
-      (print file " doesn't exist")
-      (usage))
-    (execute (absolute-path file) rest)))
+    (let ((file (or file (find-saven-file (saven:supported-file-extensions)))))
+      (unless (and file (file-exists? file))
+	(print (or file "saven file") " doesn't exist")
+	(usage))
+    (execute (absolute-path file) rest))))
