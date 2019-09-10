@@ -10,6 +10,7 @@
 	    saven:module-descriptor-location
 	    saven:module-descriptor-source-directories
 	    saven:module-descriptor-test-source-directories
+	    saven:module-descriptor-targets
 	    saven:module-descriptor-parent-module
 	    saven:module-descriptor-root-module
 
@@ -36,6 +37,7 @@
 	  location
 	  source-directories
 	  test-source-directories
+	  targets ;; will be used by executor
 	  parent$
 	  root$))
 (define (saven:module-descriptor-parent-module module)
@@ -101,6 +103,7 @@
      cur-dir
      (find-directory dirs "source" '("src/main"))
      (find-directory dirs "test" '("src/test"))
+     (assq 'targets saven)
      (parent-promise)
      (root-promise))))
 

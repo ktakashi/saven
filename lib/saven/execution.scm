@@ -8,6 +8,7 @@
 	    (sagittarius control)
 	    (srfi :1 lists)
 	    (util list)
+	    (util vector)
 	    (saven console)
 	    (saven descriptors)
 	    (saven phases)
@@ -67,13 +68,20 @@
 	  +default-test-plugin+
 	  +default-package-plugin+
 	  +clean-plugin+))
+  (define user-defined-targets
+    (->custom-targets (saven:module-descriptor-targets module)))
   ;; get plugin if we support
   (lambda (targets)
+    (define phases/target
+      (map (lambda (target)
+	     (target->phases (string->symbol target))) targets))
     (define phases
       (order-phases
        (apply lset-union eq?
-	      (map (lambda (target)
-		     (target->phases (string->symbol target))) targets))))
+	      (filter (lambda (p/t) (not (null? (cdr p/t)))) phases/target))))
+    (define custom-targets
+      (filter-map (lambda (p/t) (and (null? (cdr p/t)) (car p/t)))
+		  phases/target))
     (saven:console-info-write "Building module '~a'"
 			      (saven:module-descriptor-name module))
     (for-each (lambda (phase)
@@ -81,7 +89,29 @@
 		(for-each (lambda (plugin)
 			    (saven:plugin-context-execute!
 			     plugin phase phase-context))
-			  plugin-contexts)) phases)))
+			  plugin-contexts)) phases)
+    (when user-defined-targets
+      (for-each (lambda (target)
+		  (cond ((hashtable-ref user-defined-targets target #f) =>
+			 (lambda (proc) (proc phase-context)))))
+		custom-targets))))
+
+(define (->custom-targets targets)
+  (define (->proc target)
+    ;; dummy
+    (lambda (context)
+      (display target) (newline)))
+  (define (create-targets targets)
+    (define table (make-eq-hashtable))
+    (define (get-name target)
+      (cdr (vector-find (lambda (e) (string=? (car e) "name")) target)))
+    (fold-left (lambda (table target)
+		 (hashtable-set! table (string->symbol (get-name target))
+				 (->proc target))
+		 table)
+	       table (cdr targets))
+    table)
+  (and targets (create-targets targets)))
 
 (define (order-phases phase-list)
   (filter-map (lambda (p) (and (memq p phase-list) p)) +phase-order+))
@@ -115,8 +145,8 @@
   (cond ((assq target +builtin-targets+) =>
 	 (lambda (slot)
 	   (define deps (resolve-dependency (cdr slot)))
-	   (append deps (resolve-phases (cdr slot)))))
+	   (cons target (append deps (resolve-phases (cdr slot))))))
 	;; TODO error
-	(else '())))
+	(else (list target))))
 
 )

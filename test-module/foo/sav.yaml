@@ -4,3 +4,10 @@ dependencies:
     name: ktakashi/r6rs-pffi
     paths:
       - src
+targets:
+  - name: run
+    process:
+      name: sagittarius
+      arguments:
+        - '@{-L${load-path}}'
+        - '${target-directory}/foo/run-foo.scm'
