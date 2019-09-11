@@ -1,7 +1,8 @@
 ;;; -*- mode: scheme; coding: utf-8 -*-
+#!nounbound
 (library (saven plugins test)
-    (export initialize-plugin
-	    terminate-plugin)
+    (export saven:initialize-plugin
+	    saven:terminate-plugin)
     (import (rnrs)
 	    (sagittarius)
 	    (sagittarius process)
@@ -18,7 +19,7 @@
 	      (lambda ()
 		((n "Test plugin"))))))
 
-(define (initialize-plugin config)
+(define (saven:initialize-plugin config)
   (let ((c (make-test-plugin-context)))
     (saven:plugin-context-register-phase! c 'test
      (test-plugin-executor c config))))
@@ -79,7 +80,7 @@
       (saven:console-info-write "Result of '~a'~%~a" f
 				(get-message errb inb)))))
 
-(define (terminate-plugin context)
+(define (saven:terminate-plugin context)
   (assert (test-plugin-context? context))
   ;; TODO terminate process if needed
   )

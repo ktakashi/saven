@@ -22,7 +22,6 @@
 	    (rnrs r5rs) ;; for promise
 	    (sagittarius)
 	    (util file)
-	    (util vector)
 	    (srfi :13 strings)
 	    (srfi :39 parameters)
 	    (saven console)
@@ -83,9 +82,8 @@
     (cond ((assq 'modules (cdr saven)) => (lambda (m) (map ->modules (cdr m))))
 	  (else '())))
   (define (find-directory dirs key default)
-    (define v (and dirs (cadr dirs)))
-    (cond ((and v (vector-find (lambda (s) (string=? (car s) key)) v)))
-	  (else default)))
+    (define v (and dirs (cdr dirs)))
+    (cond ((and v (assq key v)) => cdr) (else default)))
   (unless (and (pair? saven) (eq? (car saven) 'saven))
     (assertion-violation 'saven:build-file->module-descriptor
 			 "Unknown file" sav-file))
@@ -101,8 +99,8 @@
      modules
      #f
      cur-dir
-     (find-directory dirs "source" '("src/main"))
-     (find-directory dirs "test" '("src/test"))
+     (find-directory dirs 'source '("src/main"))
+     (find-directory dirs 'test '("src/test"))
      (assq 'targets saven)
      (parent-promise)
      (root-promise))))

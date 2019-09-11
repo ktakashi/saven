@@ -1,7 +1,7 @@
 ;;; -*- mode: scheme; coding: utf-8 -*-
 (library (saven plugins clean)
-    (export initialize-plugin
-	    terminate-plugin)
+    (export saven:initialize-plugin
+	    saven:terminate-plugin)
     (import (rnrs)
 	    (util file)
 	    (saven plugins context)
@@ -14,7 +14,7 @@
 	      (lambda ()
 		((n "Clean plugin"))))))
 
-(define (initialize-plugin config)
+(define (saven:initialize-plugin config)
   (let ((c (make-clean-plugin-context)))
     (saven:plugin-context-register-phase! c 'clean
      (execute-cleaning c config))))
@@ -27,7 +27,7 @@
     (when (file-exists? target-directory)
       (delete-directory* target-directory))))
 
-(define (terminate-plugin context)
+(define (saven:terminate-plugin context)
   (assert (clean-plugin-context? context))
   ;; TODO terminate process if needed
   )

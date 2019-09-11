@@ -1,7 +1,8 @@
 ;;; -*- mode: scheme; coding: utf-8 -*-
+#!nounbound
 (library (saven plugins package)
-    (export initialize-plugin
-	    terminate-plugin)
+    (export saven:initialize-plugin
+	    saven:terminate-plugin)
     (import (rnrs)
 	    (archive)
 	    (rfc gzip)
@@ -17,7 +18,7 @@
 	      (lambda ()
 		((n "Package plugin"))))))
 
-(define (initialize-plugin config)
+(define (saven:initialize-plugin config)
   (let ((c (make-package-plugin-context)))
     (saven:plugin-context-register-phase! c 'package
      (execute-packaging c config))))
@@ -47,7 +48,7 @@
 			      (append-entry! aout (create-entry aout f)))
 			    files))))))))))
 
-(define (terminate-plugin context)
+(define (saven:terminate-plugin context)
   (assert (package-plugin-context? context))
   ;; TODO terminate process if needed
   )

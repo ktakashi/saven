@@ -34,13 +34,13 @@
     package))
 
 (define +default-build-plugin+
-  (eval '(initialize-plugin ()) (environment '(saven plugins build))))
+  (eval '(saven:initialize-plugin ()) (environment '(saven plugins build))))
 (define +default-test-plugin+
-  (eval '(initialize-plugin ()) (environment '(saven plugins test))))
+  (eval '(saven:initialize-plugin ()) (environment '(saven plugins test))))
 (define +default-package-plugin+
-  (eval '(initialize-plugin ()) (environment '(saven plugins package))))
+  (eval '(saven:initialize-plugin ()) (environment '(saven plugins package))))
 (define +clean-plugin+
-  (eval '(initialize-plugin ()) (environment '(saven plugins clean))))
+  (eval '(saven:initialize-plugin ()) (environment '(saven plugins clean))))
 
 (define (saven:execution module)
   (define-values (load-paths test-load-paths) (retrieve-load-paths module))
@@ -97,17 +97,18 @@
 		custom-targets))))
 
 (define (->custom-targets targets)
-  (define (->proc target)
-    ;; dummy
-    (lambda (context)
-      (display target) (newline)))
+  (define (->proc target-context)
+    ((eval `saven:create-target-process
+	   (environment `(saven targets ,(car target-context))))
+     (cdr target-context)))
   (define (create-targets targets)
     (define table (make-eq-hashtable))
-    (define (get-name target)
-      (cdr (vector-find (lambda (e) (string=? (car e) "name")) target)))
+    (define (get-name target) (cadr (assq 'name target)))
+    (define (get-target-context target)
+      (assp (lambda (e) (not (eq? 'name e))) target))
     (fold-left (lambda (table target)
 		 (hashtable-set! table (string->symbol (get-name target))
-				 (->proc target))
+				 (->proc (get-target-context target)))
 		 table)
 	       table (cdr targets))
     table)

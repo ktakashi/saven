@@ -39,25 +39,23 @@
 	(if (json-pointer-not-found? v)
 	    default
 	    v)))))
-(define (optional-json-pointer path . maybe-default)
-  (define default (and (not (null? maybe-default)) (car maybe-default)))
-  (let ((p (json-pointer path)))
-    (lambda (json)
-      (let ((v (p json)))
-	(if (json-pointer-not-found? v)
-	    default
-	    v)))))
 
 (define dependencies-pointer (optional-json-pointer "/dependencies" '()))
-(define (remove-all-of sexp . keys)
+(define (vector->alist v)
   (vector->list
    (vector-map
     (lambda (s)
       ;; this sucks...
-      (if (pair? (cdr s))
-	  (cons (string->symbol (car s)) (cdr s))
-	  (list (string->symbol (car s)) (cdr s))))
-    (vector-remove (lambda (o) (member (car o) keys)) sexp))))
+      (cond ((pair? (cdr s))
+	     (cons (string->symbol (car s))
+		   (map (lambda (e) (if (vector? e) (vector->alist e) e))
+			(cdr s))))
+	    ((vector? (cdr s))
+	     (cons (string->symbol (car s)) (vector->alist (cdr s))))
+	    (else (list (string->symbol (car s)) (cdr s)))))
+    v)))
+(define (remove-all-of sexp . keys)
+  (vector->alist (vector-remove (lambda (o) (member (car o) keys)) sexp)))
 (define (adjust-build-descriptor sexp)
   (define (adjust p handler)
     (let ((v (p sexp)))

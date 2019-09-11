@@ -1,7 +1,7 @@
 ;;; -*- mode: scheme; coding: utf-8 -*-
 (library (saven plugins build)
-    (export initialize-plugin
-	    terminate-plugin)
+    (export saven:initialize-plugin
+	    saven:terminate-plugin)
     (import (rnrs)
 	    (util file)
 	    (saven plugins context)
@@ -14,7 +14,7 @@
 	      (lambda ()
 		((n "Build plugin"))))))
 
-(define (initialize-plugin config)
+(define (saven:initialize-plugin config)
   (let ((c (make-build-plugin-context)))
     (saven:plugin-context-register-phase! c 'build
      (execute-building c config))))
@@ -30,7 +30,7 @@
 		(copy-directory source-directory working-directory))
 	      source-directories)))
 
-(define (terminate-plugin context)
+(define (saven:terminate-plugin context)
   (assert (build-plugin-context? context))
   ;; TODO terminate process if needed
   )
