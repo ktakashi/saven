@@ -1,9 +1,9 @@
 ---
 dependencies:
-  - type: github
-    name: ktakashi/r6rs-pffi
-    paths:
-      - src
+  - github:
+      name: ktakashi/r6rs-pffi
+      paths:
+        - src
 targets:
   - name: run
     process:

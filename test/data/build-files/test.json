@@ -1,9 +1,10 @@
 {
     "dependencies": [
 	{
-	    "type": "github",
-	    "name": "ktakashi/r6rs-pffi",
-	    "release": "master"
+	    "github": {
+		"name": "ktakashi/r6rs-pffi",
+		"release": "master"
+	    }
 	},
 	{
 	    "type": "github",

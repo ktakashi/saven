@@ -1,6 +1,6 @@
 ---
 dependencies:
-  - type: module
-    name: foo
-  - type: module
-    name: bar
+  - module:
+      name: foo
+  - module:
+      name: bar

@@ -32,14 +32,13 @@
 (define (read-json-build-file file)
   (adjust-build-descriptor (call-with-input-file file json-read)))
 
-(define (required-json-pointer path)
+(define (optional-json-pointer path default)
   (let ((p (json-pointer path)))
     (lambda (json)
       (let ((v (p json)))
-	(when (json-pointer-not-found? v)
-	  ;; TODO proper condition
-	  (error path "required element is missing"))
-	v))))
+	(if (json-pointer-not-found? v)
+	    default
+	    v)))))
 (define (optional-json-pointer path . maybe-default)
   (define default (and (not (null? maybe-default)) (car maybe-default)))
   (let ((p (json-pointer path)))
@@ -68,12 +67,16 @@
   `(saven ,@(adjust dependencies-pointer adjust-dependencies)
 	  ,@(remove-all-of sexp "dependencies")))
 
-(define type-pointer (required-json-pointer "/type"))
+(define type-pointer (optional-json-pointer "/type" #f))
 
 (define (adjust-dependencies dependencies)
   (define (->dependency dep)
-    `(,(string->symbol (type-pointer dep))
-      ,@(remove-all-of dep "type")))
+    (cond ((type-pointer dep) =>
+	   (lambda (n)
+	     `(,(string->symbol n) ,@(remove-all-of dep "type"))))
+	  (else
+	   (let ((m (vector-ref dep 0)))
+	     `(,(string->symbol (car m)) ,@(remove-all-of (cdr m)))))))
   `((dependencies
      ,@(map ->dependency dependencies))))
 
