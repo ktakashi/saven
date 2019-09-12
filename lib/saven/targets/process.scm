@@ -8,6 +8,7 @@
 	    (sagittarius generators)
 	    (sagittarius process)
 	    (saven phases)
+	    (saven descriptors)
 	    (srfi :1 lists)
 	    (srfi :13 strings)
 	    (srfi :14 char-sets)
@@ -62,6 +63,9 @@
   (define table (make-hashtable string-hash string=?))
   (define (add key accessor)
     (hashtable-set! table key (accessor phase-context)))
+  (define (->module-accessor accessor)
+    (lambda (ctx)
+      (accessor (saven:phase-context-module ctx))))
   ;; pre-define variables
   (add "load-paths" saven:phase-context-load-paths)
   (add "test-load-paths" saven:phase-context-test-load-paths)
@@ -70,6 +74,7 @@
   (add "target-directory" saven:phase-context-target-directory)
   (add "output-directory" saven:phase-context-working-directory)
   (add "test-output-directory" saven:phase-context-test-working-directory)
+  (add "project-directory" (->module-accessor saven:module-descriptor-location))
   ;; TODO add module properties
   table)
 (define (saven:argument-environment-ref env key)
