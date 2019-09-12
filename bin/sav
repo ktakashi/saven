@@ -20,9 +20,9 @@ exec sagittarius $0 "$@"
   (lifecycle targets))
 
 (define (find-saven-file exts)
-  (find (lambda (ext)
-	  (let ((file (string-append "sav." ext)))
-	    (and (file-exists? file) file))) exts))
+  (exists (lambda (ext)
+	    (let ((file (string-append "sav." ext)))
+	      (and (file-exists? file) file))) exts))
 
 (define (main args)
   (with-args (cdr args)
