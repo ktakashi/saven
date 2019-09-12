@@ -75,9 +75,12 @@
     (->custom-targets (saven:module-descriptor-targets module)))
   ;; get plugin if we support
   (lambda (targets)
+    (define ordered-targets
+      (order-targets targets
+		     (saven:module-descriptor-targets module)))
     (define phases/target
       (map (lambda (target)
-	     (target->phases (string->symbol target))) targets))
+	     (target->phases (string->symbol target))) ordered-targets))
     (define phases
       (order-phases
        (apply lset-union eq?
@@ -99,6 +102,24 @@
 			 (lambda (procs)
 			   (for-each (lambda (p) (p phase-context)) procs)))))
 		custom-targets))))
+
+(define (order-targets input-targets custom-targets)
+  (define (order-custom-targets target)
+    (define depends (assq 'depends target))
+    (define name (cadr (assq 'name target)))
+    (if depends
+	`(,name ,@(cdr depends) ,name)
+	(list name name)))
+  (define ordered-custom-targets
+    (or (and custom-targets
+	     (map order-custom-targets (cdr custom-targets)))
+	'()))
+  (fold-left (lambda (targets target)
+	       ;; FIXME inefficient...
+	       (append targets
+		       (cond ((assoc target ordered-custom-targets) => cdr)
+			     (else (list target)))))
+	     '() input-targets))
 
 (define (->custom-targets targets)
   (define (->proc target-context)

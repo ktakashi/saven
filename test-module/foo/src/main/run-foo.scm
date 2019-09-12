@@ -1,4 +1,4 @@
 (import (rnrs) (foo))
 
-(display (foo-proc (command-line)))
+(display (foo-proc (cdr (command-line))))
 (newline)

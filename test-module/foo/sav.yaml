@@ -6,16 +6,21 @@ dependencies:
         - src
 targets:
   - name: run
+    depends:
+      - build
+      - run2
     process:
       name: sagittarius
       arguments:
         - '@{load-paths,-L}' # expanded to list of arguments with -L prefix
         - '${output-directory}/run-foo.scm'
-        - '${load-paths}' # comma separated
-  - name: run
+        - 'Run ${load-paths}' # comma separated
+  - name: run2
+    depends:
+      - build
     process:
       name: sagittarius
       arguments:
         - '@{load-paths,-L}' # expanded to list of arguments with -L prefix
         - '${output-directory}/run-foo.scm'
-        - '${load-paths,:}  ${target-directory}'
+        - 'Run2: ${load-paths,:}  ${target-directory}'
