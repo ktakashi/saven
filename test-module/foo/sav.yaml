@@ -9,7 +9,7 @@ targets:
     process:
       name: sagittarius
       arguments:
-        - '@{load-path,-L}' # expanded to list of arguments with -L prefix
-        - '${target-directory}/foo/run-foo.scm'
-        - '${load-path}' # comma separated
-        - '${load-path,:}-${target-directory}'
+        - '@{load-paths,-L}' # expanded to list of arguments with -L prefix
+        - '${output-directory}/run-foo.scm'
+        - '${load-paths}' # comma separated
+        - '${load-paths,:}-${target-directory}'

@@ -6,7 +6,10 @@
 	    (peg)
 	    (peg chars)
 	    (sagittarius generators)
+	    (sagittarius process)
+	    (saven phases)
 	    (srfi :1 lists)
+	    (srfi :13 strings)
 	    (srfi :14 char-sets)
 	    (srfi :127 lseqs))
 
@@ -15,10 +18,15 @@
     (cond ((assq 'arguments arguments) =>
 	   (lambda (a) (map saven:parse-process-arguments (cdr a))))
 	  (else '())))
+  (define name (cadr (assq 'name arguments)))
   (lambda (phase-context)
+    (define env (make-saven:argument-environment phase-context))
     (define arguments
-      (append-map (lambda (ref) (ref phase-context)) arguments-referers))
-    (write arguments) (newline)))
+      (append-map (lambda (ref) (ref env)) arguments-referers))
+    (let ((p (create-process name arguments
+			     :stdout (standard-output-port)
+			     :stderr (standard-error-port))))
+      (process-wait p))))
 
 (define (saven:parse-process-arguments s)
   (define lseq (generator->lseq (string->generator s)))
@@ -29,7 +37,11 @@
 
 (define (make-single-ref var . maybe-joint)
   (define joint (if (null? maybe-joint) " " (car maybe-joint)))
-  (lambda (env) (string-append "$" var "$")))
+  (lambda (env)
+    (let ((v (saven:argument-environment-ref env var)))
+      (if (pair? v)
+	  (string-join v joint)
+	  v))))
 
 (define (make-array-ref var . maybe-prefix&suffix)
   (define prefix (if (null? maybe-prefix&suffix) "" (car maybe-prefix&suffix)))
@@ -37,7 +49,31 @@
 			 (null? (cdr maybe-prefix&suffix)))
 		     ""
 		     (cadr maybe-prefix&suffix)))
-  (lambda (env) (list (string-append "array:" var))))
+  (define (make-value v)
+    (string-append prefix v suffix))
+  (lambda (env)
+    (let ((v (saven:argument-environment-ref env var)))
+      (if (pair? v)
+	  (map make-value v)
+	  (list (make-value v))))))
+
+;; simple environment... for now
+(define (make-saven:argument-environment phase-context)
+  (define table (make-hashtable string-hash string=?))
+  (define (add key accessor)
+    (hashtable-set! table key (accessor phase-context)))
+  ;; pre-define variables
+  (add "load-paths" saven:phase-context-load-paths)
+  (add "test-load-paths" saven:phase-context-test-load-paths)
+  (add "source-directories" saven:phase-context-source-directories)
+  (add "test-source-directories" saven:phase-context-test-source-directories)
+  (add "target-directory" saven:phase-context-target-directory)
+  (add "output-directory" saven:phase-context-working-directory)
+  (add "test-output-directory" saven:phase-context-test-working-directory)
+  ;; TODO add module properties
+  table)
+(define (saven:argument-environment-ref env key)
+  (hashtable-ref env key ""))
 
 
 ;; variable ref (EBNF)

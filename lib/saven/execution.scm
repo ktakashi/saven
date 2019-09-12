@@ -55,13 +55,16 @@
   (define (module->test-directories module)
     (map (lambda (d) (build-path source-directory d))
 	 (saven:module-descriptor-test-source-directories module)))
+  (define working-directory (build-path target-directory "main"))
+  (define test-working-directory (build-path target-directory "test"))
   (define phase-context
-    (make-saven:phase-context load-paths test-load-paths
+    (make-saven:phase-context (cons working-directory load-paths)
+			      (cons test-working-directory test-load-paths)
 			      (module->source-directories module)
 			      (module->test-directories module)
 			      target-directory
-			      (build-path target-directory "main")
-			      (build-path target-directory "test")
+			      working-directory
+			      test-working-directory
 			      module))
   (define plugin-contexts
     (list +default-build-plugin+
@@ -127,7 +130,7 @@
 		     (values suc (append path err))
 		     (values (append path suc) err))
 		 (values suc err))))
-	 '()  () dependencies))
+	 '() '() dependencies))
 
 (define (get-paths module dependency)
   (define type (car dependency))
