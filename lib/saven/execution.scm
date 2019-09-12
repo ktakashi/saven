@@ -96,7 +96,8 @@
     (when user-defined-targets
       (for-each (lambda (target)
 		  (cond ((hashtable-ref user-defined-targets target #f) =>
-			 (lambda (proc) (proc phase-context)))))
+			 (lambda (procs)
+			   (for-each (lambda (p) (p phase-context)) procs)))))
 		custom-targets))))
 
 (define (->custom-targets targets)
@@ -107,11 +108,12 @@
   (define (create-targets targets)
     (define table (make-eq-hashtable))
     (define (get-name target) (cadr (assq 'name target)))
-    (define (get-target-context target)
-      (assp (lambda (e) (not (eq? 'name e))) target))
+    (define (get-target-contexts target)
+      (filter (lambda (e) (not (memq (car e) '(name depends)))) target))
     (fold-left (lambda (table target)
-		 (hashtable-set! table (string->symbol (get-name target))
-				 (->proc (get-target-context target)))
+		 (let ((procs (map ->proc (get-target-contexts target))))
+		   (hashtable-update! table (string->symbol (get-name target))
+				      (lambda (v) (append v procs)) '()))
 		 table)
 	       table (cdr targets))
     table)
