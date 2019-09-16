@@ -11,6 +11,7 @@ targets:
       - run2
     process:
       name: sagittarius
+      work_directory: '${test-output-directory}'
       arguments:
         - '@{load-paths,-L}' # expanded to list of arguments with -L prefix
         - '${output-directory}/run-foo.scm'

@@ -32,7 +32,7 @@
     (define env (make-saven:argument-environment phase-context))
     (define arguments
       (append-map (lambda (ref) (ref env)) arguments-referers))
-    (define work-dir (or (and workdir (workdir env))
+    (define work-dir (or (and workdir (car (workdir env)))
 			 (saven:phase-context-working-directory phase-context)))
     (parameterize ((current-directory work-dir))
       (let ((p (create-process name arguments
