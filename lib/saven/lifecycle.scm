@@ -1,13 +1,20 @@
 ;;; -*- mode: scheme; coding: utf-8 -*-
 #!nounbound
 (library (saven lifecycle)
-    (export saven:lifecycle)
+    (export saven:lifecycle
+	    saven:push-cleanup!)
     (import (rnrs)
 	    (sagittarius)
+	    (srfi :39 parameters)
 	    (saven console)
 	    (saven descriptors)
 	    (saven phases)
 	    (saven execution))
+
+(define *cleanups* (make-parameter '()))
+(define (saven:push-cleanup! cleanup)
+  (assert (procedure? cleanup))
+  (*cleanups* (cons cleanup (*cleanups*))))
 
 (define (saven:lifecycle modules)
   (saven:console-info-write "Execution order")
@@ -17,8 +24,11 @@
 	    modules)
   (let ((executions (map saven:execution modules)))
     (lambda (targets)
-      (fold-left (lambda (results execution) (cons (execution targets) results))
-		 '() executions)
+      (parameterize ((*cleanups* '()))
+	(fold-left (lambda (results execution)
+		     (cons (execution targets) results))
+		   '() executions)
+	(for-each (lambda (thunk) (thunk)) (*cleanups*)))
       (saven:console-info-write "Finished"))))
 
 ;; phase and builtin target mapping

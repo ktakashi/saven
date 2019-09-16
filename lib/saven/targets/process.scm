@@ -5,13 +5,16 @@
     (import (rnrs)
 	    (peg)
 	    (peg chars)
+	    (sagittarius)
 	    (sagittarius generators)
 	    (sagittarius process)
 	    (saven phases)
 	    (saven descriptors)
+	    (saven lifecycle)
 	    (srfi :1 lists)
 	    (srfi :13 strings)
 	    (srfi :14 char-sets)
+	    (srfi :39 parameters)
 	    (srfi :127 lseqs))
 
 (define (saven:create-target-process arguments)
@@ -20,14 +23,29 @@
 	   (lambda (a) (map saven:parse-process-arguments (cdr a))))
 	  (else '())))
   (define name (cadr (assq 'name arguments)))
+  (define background? (cond ((assq 'background arguments) => cadr) (else #f)))
+  (define workdir
+    (cond ((assq 'work_directory arguments) =>
+	   (lambda (slot) (saven:parse-process-arguments (cadr slot))))
+	  (else #f)))
   (lambda (phase-context)
     (define env (make-saven:argument-environment phase-context))
     (define arguments
       (append-map (lambda (ref) (ref env)) arguments-referers))
-    (let ((p (create-process name arguments
-			     :stdout (standard-output-port)
-			     :stderr (standard-error-port))))
-      (process-wait p))))
+    (define work-dir (or (and workdir (workdir env))
+			 (saven:phase-context-working-directory phase-context)))
+    (parameterize ((current-directory work-dir))
+      (let ((p (create-process name arguments
+			       :stdout (standard-output-port)
+			       :stderr (standard-error-port)
+			       :detach? background?)))
+	(if background?
+	    (saven:push-cleanup!
+	     (lambda ()
+	       (when (process-active? p)
+		 (or (process-wait p :timeout 0)
+		     (process-kill p :children? #t)))))
+	    (process-wait p))))))
 
 (define (saven:parse-process-arguments s)
   (define lseq (generator->lseq (string->generator s)))
