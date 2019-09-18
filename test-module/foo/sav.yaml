@@ -18,11 +18,20 @@ targets:
         - 'Run ${load-paths}' # comma separated
   - name: run2
     depends:
-      - build
+      - run3
     process:
       name: sagittarius
-      background: true
       arguments:
         - '@{load-paths,-L}' # expanded to list of arguments with -L prefix
         - '${output-directory}/run-foo.scm'
         - 'Run2: ${load-paths,:}  ${target-directory}'
+  - name: run3
+    depends:
+      - build
+    process:
+      name: sagittarius
+#      background: true
+      arguments:
+        - '@{load-paths,-L}' # expanded to list of arguments with -L prefix
+        - '${output-directory}/run-foo.scm'
+        - 'Run3: ${load-paths,:}  ${target-directory}'

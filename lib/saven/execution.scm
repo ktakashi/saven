@@ -105,11 +105,20 @@
 
 (define (order-targets input-targets custom-targets)
   (define (order-custom-targets target)
-    (define depends (assq 'depends target))
     (define name (cadr (assq 'name target)))
-    (if depends
-	`(,name ,@(cdr depends) ,name)
-	(list name name)))
+    (define (get-depends target)
+      (define depends (assq 'depends target))
+      (if depends
+	  (append-map (lambda (d)
+			(let ((dep (find (lambda (t)
+					    (string=? (cadr (assq 'name t)) d))
+					  (cdr custom-targets))))
+			  (if dep
+			      (append (get-depends dep) (list d))
+			      (list d))))
+		      (cdr depends))
+	  '()))
+    `(,name ,@(get-depends target) ,name))
   (define ordered-custom-targets
     (or (and custom-targets
 	     (map order-custom-targets (cdr custom-targets)))
