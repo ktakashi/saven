@@ -96,7 +96,7 @@
 			    (saven:plugin-context-execute!
 			     plugin phase phase-context))
 			  plugin-contexts)) phases)
-    (when user-defined-targets
+    (unless (null? user-defined-targets)
       (for-each (lambda (target)
 		  (cond ((hashtable-ref user-defined-targets target #f) =>
 			 (lambda (procs)
@@ -112,7 +112,7 @@
 	  (append-map (lambda (d)
 			(let ((dep (find (lambda (t)
 					    (string=? (cadr (assq 'name t)) d))
-					  (cdr custom-targets))))
+					 custom-targets)))
 			  (if dep
 			      (append (get-depends dep) (list d))
 			      (list d))))
@@ -120,8 +120,7 @@
 	  '()))
     `(,name ,@(get-depends target) ,name))
   (define ordered-custom-targets
-    (or (and custom-targets
-	     (map order-custom-targets (cdr custom-targets)))
+    (or (and custom-targets (map order-custom-targets custom-targets))
 	'()))
   (fold-left (lambda (targets target)
 	       ;; FIXME inefficient...
@@ -145,9 +144,9 @@
 		   (hashtable-update! table (string->symbol (get-name target))
 				      (lambda (v) (append v procs)) '()))
 		 table)
-	       table (cdr targets))
+	       table targets)
     table)
-  (and targets (create-targets targets)))
+  (create-targets targets))
 
 (define (order-phases phase-list)
   (filter-map (lambda (p) (and (memq p phase-list) p)) +phase-order+))

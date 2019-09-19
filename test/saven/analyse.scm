@@ -26,6 +26,7 @@ exec sagittarius -L$lib $me "$@"
    '("src/main")
    '("src/test")
    #f
+   '()
    parent
    parent))
 (define child1
@@ -39,6 +40,7 @@ exec sagittarius -L$lib $me "$@"
    '("src/main")
    '("src/test")
    #f
+   '()
    parent
    parent))
 (define child2
@@ -53,6 +55,7 @@ exec sagittarius -L$lib $me "$@"
    '("src/main")
    '("src/test")
    #f
+   '()
    parent
    parent))
 
@@ -67,6 +70,7 @@ exec sagittarius -L$lib $me "$@"
    '("src/main")
    '("src/test")
    #f
+   '()
    parent
    parent))
 

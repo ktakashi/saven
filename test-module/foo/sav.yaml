@@ -4,6 +4,10 @@ dependencies:
       name: ktakashi/r6rs-pffi
       paths:
         - src
+
+properties:
+  prop.foo: foo
+
 targets:
   - name: run
     depends:
@@ -16,6 +20,7 @@ targets:
         - '@{load-paths,-L}' # expanded to list of arguments with -L prefix
         - '${output-directory}/run-foo.scm'
         - 'Run ${load-paths}' # comma separated
+        - '${prop.foo}'
   - name: run2
     depends:
       - run3

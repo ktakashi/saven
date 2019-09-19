@@ -11,6 +11,7 @@
 	    saven:module-descriptor-source-directories
 	    saven:module-descriptor-test-source-directories
 	    saven:module-descriptor-targets
+	    saven:module-descriptor-properties
 	    saven:module-descriptor-parent-module
 	    saven:module-descriptor-root-module
 
@@ -37,6 +38,7 @@
 	  source-directories
 	  test-source-directories
 	  targets ;; will be used by executor
+	  properties
 	  parent$
 	  root$))
 (define (saven:module-descriptor-parent-module module)
@@ -60,7 +62,10 @@
 (define (%build-file->module-descriptor root-dir parent-dir
 					cur-dir sav-file table)
   (define saven (saven:read-build-file sav-file))
-  (define (parent-promise) (delay (hashtable-ref table parent-dir #f)))
+  (define (parent-promise)
+    (if parent-dir
+	(delay (hashtable-ref table parent-dir #f))
+	(delay #f)))
   (define (root-promise) (delay (hashtable-ref table root-dir #f)))
   (define (find-modules saven)
     (define (->modules name)
@@ -101,7 +106,10 @@
      cur-dir
      (find-directory dirs 'source '("src/main"))
      (find-directory dirs 'test '("src/test"))
-     (assq 'targets saven)
+     (cond ((assq 'targets saven) => cdr)
+	   (else '()))
+     (cond ((assq 'properties saven) => cdr)
+	   (else '()))
      (parent-promise)
      (root-promise))))
 

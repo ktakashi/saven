@@ -2,11 +2,14 @@
 #!nounbound
 (library (saven console)
     (export saven:console-info-write
+	    saven:console-warn-write
 	    saven:console-write)
     (import (rnrs)
 	    (sagittarius))
 (define (saven:console-info-write msg . args)
   (apply saven:console-write 'INFO msg args))
+(define (saven:console-warn-write msg . args)
+  (apply saven:console-write 'WARNING msg args))
 (define (saven:console-write level msg . args)
   (display "[") (display level) (display "] ")
   (if (null? args)

@@ -11,6 +11,7 @@
 	    (saven phases)
 	    (saven descriptors)
 	    (saven lifecycle)
+	    (saven console)
 	    (srfi :1 lists)
 	    (srfi :13 strings)
 	    (srfi :14 char-sets)
@@ -84,6 +85,17 @@
   (define (->module-accessor accessor)
     (lambda (ctx)
       (accessor (saven:phase-context-module ctx))))
+  (define (add-module-properties module)
+    (define (do-add module)
+      (define properties (saven:module-descriptor-properties module))
+      (for-each (lambda (kv)
+		  (hashtable-set! table (symbol->string (car kv)) (cadr kv)))
+		properties))
+    ;; add first parent
+    (cond ((saven:module-descriptor-parent-module module) =>
+	   add-module-properties))
+    (do-add module))
+
   ;; pre-define variables
   (add "load-paths" saven:phase-context-load-paths)
   (add "test-load-paths" saven:phase-context-test-load-paths)
@@ -93,10 +105,13 @@
   (add "output-directory" saven:phase-context-working-directory)
   (add "test-output-directory" saven:phase-context-test-working-directory)
   (add "project-directory" (->module-accessor saven:module-descriptor-location))
-  ;; TODO add module properties
+  (add-module-properties (saven:phase-context-module phase-context))
   table)
 (define (saven:argument-environment-ref env key)
-  (hashtable-ref env key ""))
+  (cond ((hashtable-ref env key #f))
+	(else
+	 (saven:console-warn-write "Variable ~a doesn't exist" key)
+	 "")))
 
 
 ;; variable ref (EBNF)
